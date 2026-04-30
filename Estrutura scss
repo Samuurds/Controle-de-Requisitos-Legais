@@ -1,0 +1,6 @@
+requisitos-legais-cemig/
+│
+├── index.html          (página principal)
+├── data.json          (banco de dados compartilhado)
+├── config.js          (configurações)
+└── README.md          (instruções)

@@ -1,56 +1,82 @@
 <!DOCTYPE html>
-<!-- saved from url=(0078)file:///C:/Users/C060186/Downloads/REQUISITOS%20LEGAIS%20-%20AT%20-%20VPG.HTML -->
-<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-<title>Controle de Requisitos Legais</title>
-<!-- Chart.js -->
-<script src="./Controle de Requisitos Legais.vfinal_files/chart.js.baixados"></script>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Requisitos Legais - Cemig</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="config.js"></script>
 <style>
     body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:0;}
-    header{background:#2c3e50;color:#fff;padding:15px;text-align:center;}
+    header{background:#2c3e50;color:#fff;padding:15px;text-align:center;position:relative;}
+    .sync-status{position:absolute;top:15px;right:15px;background:#27ae60;color:#fff;padding:5px 10px;border-radius:4px;font-size:0.85rem;}
+    .sync-status.syncing{background:#f39c12;}
+    .sync-status.error{background:#c0392b;}
     .container{max-width:1200px;margin:20px auto;padding:20px;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);}
-    .dashboard{display:flex;justify-content:space-around;margin-bottom:30px;}
-    .card{flex:1;max-width:300px;background:#e8f0fe;padding:20px;margin:0 10px;border-radius:6px;text-align:center;}
+    .dashboard{display:flex;justify-content:space-around;margin-bottom:30px;flex-wrap:wrap;}
+    .card{flex:1;max-width:300px;background:#e8f0fe;padding:20px;margin:10px;border-radius:6px;text-align:center;}
     .card h3{margin:0 0 10px;font-size:1.2rem;color:#333;}
     .card p{font-size:2rem;margin:0;color:#0066cc;}
+    .controls{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;}
     button{background:#0066cc;color:#fff;padding:8px 16px;border:none;border-radius:4px;cursor:pointer;}
     button:hover{background:#0055a5;}
-    table{width:100%;border-collapse:collapse;margin-top:20px;}
+    button:disabled{background:#ccc;cursor:not-allowed;}
+    .btn-sync{background:#27ae60;}
+    .btn-sync:hover{background:#1e8449;}
+    .btn-export{background:#8e44ad;}
+    .btn-export:hover{background:#6c3483;}
+    table{width:100%;border-collapse:collapse;margin-top:20px;font-size:0.9rem;}
     th,td{padding:10px;border:1px solid #ddd;text-align:left;}
-    th{background:#f0f0f0;position:relative;}
-    .filter-select{width:100%;margin-top:5px;}
-    .actions button{margin-right:5px;background:#27ae60;}
+    th{background:#f0f0f0;}
+    .filter-select{width:100%;margin-top:5px;padding:5px;}
+    .actions button{margin-right:5px;background:#27ae60;font-size:0.85rem;padding:5px 10px;}
     .actions button.delete{background:#c0392b;}
     .actions button.edit{background:#2980b9;}
-    /* Modal */
-    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);align-items:center;justify-content:center;}
-    .modal-content{background:#fff;padding:20px;border-radius:6px;width:90%;max-width:500px;position:relative;}
+    .row-expired{background:#ffebee !important;}
+    .row-near{background:#fff9c4 !important;}
+    .row-valid{background:#e8f5e9 !important;}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:1000;}
+    .modal-content{background:#fff;padding:20px;border-radius:6px;width:90%;max-width:500px;position:relative;max-height:90vh;overflow-y:auto;}
     .modal-content h2{margin-top:0;}
     .close{position:absolute;top:10px;right:15px;font-size:1.5rem;cursor:pointer;}
     .form-group{margin-bottom:15px;}
-    .form-group label{display:block;margin-bottom:5px;}
-    .form-group input, .form-group select{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;}
-    .error{color:#c0392b;font-size:.9rem;}
-    /* Search bar */
-    .search-wrapper{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
-    .search-wrapper input{flex:1;padding:8px;border:1px solid #ccc;border-radius:4px;margin-right:10px;}
+    .form-group label{display:block;margin-bottom:5px;font-weight:bold;}
+    .form-group input, .form-group select{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;}
+    .error{color:#c0392b;font-size:.9rem;margin-top:10px;}
+    .search-wrapper{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;gap:10px;flex-wrap:wrap;}
+    .search-wrapper input{flex:1;min-width:200px;padding:8px;border:1px solid #ccc;border-radius:4px;}
+    .last-update{text-align:center;color:#666;font-size:0.85rem;margin-top:10px;}
+    
+    @media (max-width: 768px) {
+        .card{max-width:100%;}
+        table{font-size:0.75rem;}
+        th,td{padding:5px;}
+    }
 </style>
 </head>
 <body>
-<header><h1>Plataforma de Controle de Requisitos Legais</h1></header>
-<div class="container">
+<header>
+    <h1>📋 Plataforma de Controle de Requisitos Legais</h1>
+    <div class="sync-status" id="syncStatus">● Sincronizado</div>
+</header>
 
-    <!-- Painel de indicadores -->
+<div class="container">
+    <!-- Indicadores -->
     <section class="dashboard">
-        <div class="card"><h3>Válidos</h3><p id="validCount">45</p></div>
-        <div class="card"><h3>Vencidos</h3><p id="expiredCount">1</p></div>
-        <div class="card"><h3>Vencendo &lt; 90 dias</h3><p id="nearCount">1</p></div>
+        <div class="card"><h3>✅ Válidos</h3><p id="validCount">0</p></div>
+        <div class="card"><h3>⚠️ Vencendo &lt; 90 dias</h3><p id="nearCount">0</p></div>
+        <div class="card"><h3>❌ Vencidos</h3><p id="expiredCount">0</p></div>
     </section>
 
-    <!-- Botão de inclusão -->
-    <button id="btnAdd">+ Novo Documento</button>
+    <!-- Controles -->
+    <div class="controls">
+        <button id="btnAdd">➕ Novo Documento</button>
+        <button id="btnSync" class="btn-sync">🔄 Sincronizar Agora</button>
+        <button id="btnExport" class="btn-export">📥 Exportar Excel</button>
+        <button id="btnConfig">⚙️ Configurar Token</button>
+    </div>
 
-    <!-- Pesquisa + Filtros -->
+    <!-- Pesquisa e Filtros -->
     <div class="search-wrapper">
         <input type="text" id="globalSearch" placeholder="🔍 Pesquisar documentos...">
         <select id="filterType" class="filter-select">
@@ -73,7 +99,7 @@
         </select>
     </div>
 
-    <!-- Tabela de documentos -->
+    <!-- Tabela -->
     <table id="docTable">
         <thead>
             <tr>
@@ -82,499 +108,34 @@
                 <th>Tipo</th>
                 <th>Data Emissão</th>
                 <th>Data Validade</th>
+                <th>Status</th>
                 <th>Link</th>
                 <th>Ações</th>
             </tr>
         </thead>
-        <tbody><tr>
-            <td>1</td>
-            <td>AT/GO Centro SE Vespasiano</td>
-            <td>AVCB</td>
-            <td>09/02/2026</td>
-            <td>09/02/2031</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20Vespasiano%202%20-%20Validade_10_02_2031.pdf?csf=1&amp;web=1&amp;e=bc4Ne3" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="afc36e86-e5d8-410d-ad1d-568ff1494f9e">✎ Editar</button>
-                <button class="delete" data-id="afc36e86-e5d8-410d-ad1d-568ff1494f9e">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>2</td>
-            <td>ATGO Centro SE Sete Lagoas 4 (PACP 494184)</td>
-            <td>AVCB</td>
-            <td>09/12/2020</td>
-            <td>09/12/2025</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20Sete%20Lagoas%204%20-%20validade_11_12_2025.pdf?csf=1&amp;web=1&amp;e=nL4HCt" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="a7403209-b7f7-4bd0-b66c-5fb19cbb4284">✎ Editar</button>
-                <button class="delete" data-id="a7403209-b7f7-4bd0-b66c-5fb19cbb4284">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>3</td>
-            <td>ATGO Leste SE Itabira 2</td>
-            <td>AVCB</td>
-            <td>07/12/2022</td>
-            <td>07/12/2027</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Itabira%202%20-%20validade_19_12_2027.pdf?csf=1&amp;web=1&amp;e=V1uJcI" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="6c1e96a6-9ac3-48eb-adbd-fa6931ad41c4">✎ Editar</button>
-                <button class="delete" data-id="6c1e96a6-9ac3-48eb-adbd-fa6931ad41c4">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>4</td>
-            <td>ATGO Sudeste SE Barbacena 2</td>
-            <td>AVCB</td>
-            <td>26/03/2023</td>
-            <td>26/03/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Barbacena%202%20-%20validade_28_03_2028.pdf?csf=1&amp;web=1&amp;e=92qzWj" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="5b7e13aa-0180-4ab0-9f96-e44aa585bbd6">✎ Editar</button>
-                <button class="delete" data-id="5b7e13aa-0180-4ab0-9f96-e44aa585bbd6">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>5</td>
-            <td>ATGO Norte SE Várzea da Palma 4</td>
-            <td>AVCB</td>
-            <td>09/04/2023</td>
-            <td>09/04/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Norte%20-%20SE%20V%C3%A1rzea%20da%20Palma%204%20-%20validade_11_04_2028.pdf?csf=1&amp;web=1&amp;e=PVi1YF" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="c29b5bd4-851a-4e47-9e5b-511924536a0a">✎ Editar</button>
-                <button class="delete" data-id="c29b5bd4-851a-4e47-9e5b-511924536a0a">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>6</td>
-            <td>ATGO Leste SE Baguari</td>
-            <td>AVCB</td>
-            <td>25/04/2023</td>
-            <td>25/04/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Baguari%20-%20validade_26_04_2028.pdf?csf=1&amp;web=1&amp;e=e1ZLjQ" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="9cd2366e-84ea-43be-87d5-abaa8f3a9cfe">✎ Editar</button>
-                <button class="delete" data-id="9cd2366e-84ea-43be-87d5-abaa8f3a9cfe">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>7</td>
-            <td>ATGO Sudeste SE Jeceaba</td>
-            <td>AVCB</td>
-            <td>30/07/2023</td>
-            <td>30/07/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Jeceaba%20-%20validade_01_08_2028.pdf?csf=1&amp;web=1&amp;e=vUXRfO" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="72b79f0f-359b-46d1-abe7-d83687b2bd0a">✎ Editar</button>
-                <button class="delete" data-id="72b79f0f-359b-46d1-abe7-d83687b2bd0a">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>8</td>
-            <td>ATGO Leste SE Conselheiro Pena</td>
-            <td>AVCB</td>
-            <td>06/08/2023</td>
-            <td>06/08/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Conselheiro%20Pena%20-%20validade_08_08_2028.pdf?csf=1&amp;web=1&amp;e=r6W0vz" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="d376d8ba-bccf-4d9b-b464-4104f9da0e24">✎ Editar</button>
-                <button class="delete" data-id="d376d8ba-bccf-4d9b-b464-4104f9da0e24">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>9</td>
-            <td>ATGO Leste SE Itabira 4</td>
-            <td>AVCB</td>
-            <td>23/08/2023</td>
-            <td>23/08/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Itabira%204%20-%20validade_25_08_2028.pdf?csf=1&amp;web=1&amp;e=kjD0lP" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="ce29e6dd-04bc-4f76-b5a8-11855bd54175">✎ Editar</button>
-                <button class="delete" data-id="ce29e6dd-04bc-4f76-b5a8-11855bd54175">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>10</td>
-            <td>ATGO Leste SE João Monlevade 2</td>
-            <td>AVCB</td>
-            <td>26/08/2023</td>
-            <td>26/08/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Jo%C3%A3o%20Monlevade%202%20-%20validade_28_08_2028.pdf?csf=1&amp;web=1&amp;e=jtjGYw" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="0f47f712-0ba4-49a4-b2f6-7814174a4f51">✎ Editar</button>
-                <button class="delete" data-id="0f47f712-0ba4-49a4-b2f6-7814174a4f51">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>11</td>
-            <td>ATGO Leste SE Porto Estrela</td>
-            <td>AVCB</td>
-            <td>04/09/2023</td>
-            <td>04/09/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Porto%20Estrela%20-%20validade_06_09_2028.pdf?csf=1&amp;web=1&amp;e=O5ePdz" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="68ac9a02-1e1a-4727-a62a-f2035a073474">✎ Editar</button>
-                <button class="delete" data-id="68ac9a02-1e1a-4727-a62a-f2035a073474">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>12</td>
-            <td>ATGO Leste SE Nova Era 2</td>
-            <td>AVCB</td>
-            <td>11/09/2023</td>
-            <td>11/09/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Nova%20Era%202%20-%20validade_13-09-2028.pdf?csf=1&amp;web=1&amp;e=a9C72t" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="9f43a7cf-ff98-4ca5-9a5d-8799b4e7dac5">✎ Editar</button>
-                <button class="delete" data-id="9f43a7cf-ff98-4ca5-9a5d-8799b4e7dac5">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>13</td>
-            <td>ATGO Leste SE Timóteo 2</td>
-            <td>AVCB</td>
-            <td>07/12/2023</td>
-            <td>07/12/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Tim%C3%B3teo%202%20-%20ETTM%20-%20validade_08_12_2028.pdf?csf=1&amp;web=1&amp;e=OSFW1w" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="3c0d045a-9934-4aa0-b5a3-9543239c59c2">✎ Editar</button>
-                <button class="delete" data-id="3c0d045a-9934-4aa0-b5a3-9543239c59c2">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>14</td>
-            <td>ATGO Norte Galpão LT Três Marias</td>
-            <td>AVCB</td>
-            <td>13/03/2024</td>
-            <td>13/03/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Norte%20-%20Galp%C3%A3o%20Tr%C3%AAs%20Marias%20-%20validade%2014_03_2029.pdf?csf=1&amp;web=1&amp;e=OUidVg" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="5d3ed39e-6732-4d20-aa5b-681c7b7f24fa">✎ Editar</button>
-                <button class="delete" data-id="5d3ed39e-6732-4d20-aa5b-681c7b7f24fa">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>15</td>
-            <td>ATGO Leste SE Governador Valadares 2</td>
-            <td>AVCB</td>
-            <td>12/04/2026</td>
-            <td>12/04/2031</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Governador%20Valadares%202%20-%20validade_13_04_2031.pdf?csf=1&amp;web=1&amp;e=7446BF" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="b02e5830-c93a-4de5-9b33-2bc68987c644">✎ Editar</button>
-                <button class="delete" data-id="b02e5830-c93a-4de5-9b33-2bc68987c644">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>16</td>
-            <td>ATGO Norte SE Montes Claros 2</td>
-            <td>AVCB</td>
-            <td>14/04/2024</td>
-            <td>14/04/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Norte%20-%20SE%20Montes%20Claros%202%20-%20validade_15_04_2029.pdf?csf=1&amp;web=1&amp;e=CoZuDY" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="72afb676-bd00-4f34-93c0-5198ab972d89">✎ Editar</button>
-                <button class="delete" data-id="72afb676-bd00-4f34-93c0-5198ab972d89">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>17</td>
-            <td>ATGO Norte SE Várzea da Palma 1</td>
-            <td>AVCB</td>
-            <td>22/04/2024</td>
-            <td>22/04/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Norte%20-%20SE%20V%C3%A1rzea%20da%20Palma%201%20-%20validade_23_04_2029.pdf?csf=1&amp;web=1&amp;e=6en63F" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="f63c6ab5-9f07-4371-a277-b3059595fe45">✎ Editar</button>
-                <button class="delete" data-id="f63c6ab5-9f07-4371-a277-b3059595fe45">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>18</td>
-            <td>ATGO Leste SE Timóteo 1</td>
-            <td>AVCB</td>
-            <td>29/04/2024</td>
-            <td>29/04/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Tim%C3%B3teo%201%20-%20validade_30_04_2029.pdf?csf=1&amp;web=1&amp;e=cxgQ9X" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="c74d81d6-37c5-4cd6-9378-9528f812c30d">✎ Editar</button>
-                <button class="delete" data-id="c74d81d6-37c5-4cd6-9378-9528f812c30d">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>19</td>
-            <td>ATGO Centro SE Taquaril</td>
-            <td>AVCB</td>
-            <td>14/05/2024</td>
-            <td>14/05/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20Taquaril%20-%20validade%2015_05_2029.pdf?csf=1&amp;web=1&amp;e=UGD4Gg" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="1b99c739-4c49-4e98-899d-5245390945ad">✎ Editar</button>
-                <button class="delete" data-id="1b99c739-4c49-4e98-899d-5245390945ad">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>20</td>
-            <td>ATGO Sudeste SE Itutinga</td>
-            <td>AVCB</td>
-            <td>04/06/2024</td>
-            <td>04/06/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Itutinga%20-%20validade%2005_06_2029.pdf?csf=1&amp;web=1&amp;e=ElnyBi" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="4061f920-dca9-447a-8144-e3139dc3d79c">✎ Editar</button>
-                <button class="delete" data-id="4061f920-dca9-447a-8144-e3139dc3d79c">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>21</td>
-            <td>ATGO Centro AR_P21</td>
-            <td>AVCB</td>
-            <td>09/07/2024</td>
-            <td>09/07/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20AR_P21%20-%20validade_10_07_2029.pdf?csf=1&amp;web=1&amp;e=aGtIov" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="0fc361b7-3355-440b-846a-5dfe0b0ddf06">✎ Editar</button>
-                <button class="delete" data-id="0fc361b7-3355-440b-846a-5dfe0b0ddf06">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>22</td>
-            <td>ATGO Leste SE Barão de Cocais 3</td>
-            <td>AVCB</td>
-            <td>27/12/2024</td>
-            <td>27/12/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Bar%C3%A3o%20de%20Cocais%203%20-%20validade_28_07_2029.pdf?csf=1&amp;web=1&amp;e=FnkogX" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="a9d2dc88-908d-42d3-87d5-d696fdf2f059">✎ Editar</button>
-                <button class="delete" data-id="a9d2dc88-908d-42d3-87d5-d696fdf2f059">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>23</td>
-            <td>ATGO Leste SE Ipatinga 1</td>
-            <td>AVCB</td>
-            <td>25/08/2024</td>
-            <td>25/08/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Ipatinga%201%20-%20validade_26_08_2029.pdf?csf=1&amp;web=1&amp;e=U3jege" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="ee2c31d6-150b-41dd-9b07-1a9a39e2f1df">✎ Editar</button>
-                <button class="delete" data-id="ee2c31d6-150b-41dd-9b07-1a9a39e2f1df">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>24</td>
-            <td>ATGO Centro SE Barreiro 1</td>
-            <td>AVCB</td>
-            <td>02/09/2024</td>
-            <td>02/09/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20Barreiro%201%20-%20validade_03_09_2029.pdf?csf=1&amp;web=1&amp;e=1HUVVb" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="cd4dbb0b-75d8-4443-a62e-e09835453753">✎ Editar</button>
-                <button class="delete" data-id="cd4dbb0b-75d8-4443-a62e-e09835453753">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>25</td>
-            <td>ATGO Centro SE Pimenta</td>
-            <td>AVCB</td>
-            <td>23/10/2024</td>
-            <td>23/10/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20Pimenta%20-%20validade_24_10_2029.pdf?csf=1&amp;web=1&amp;e=9Pa14F" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="1a319c0e-a14a-44b5-b30b-af0427de650c">✎ Editar</button>
-                <button class="delete" data-id="1a319c0e-a14a-44b5-b30b-af0427de650c">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>26</td>
-            <td>ATGO Sudeste SE Conselheiro Lafaiete</td>
-            <td>AVCB</td>
-            <td>04/11/2024</td>
-            <td>04/11/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Conselheiro%20Lafaiete%20-%20validade_05_11_2029.pdf?csf=1&amp;web=1&amp;e=siGdRu" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="ea765a10-ee3f-441a-bf68-6ae4193fffb3">✎ Editar</button>
-                <button class="delete" data-id="ea765a10-ee3f-441a-bf68-6ae4193fffb3">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>27</td>
-            <td>ATGO Sudeste SE Juiz de Fora 1</td>
-            <td>AVCB</td>
-            <td>10/11/2024</td>
-            <td>10/11/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Juiz%20de%20Fora%201%20-%20validade_11_11_2029.pdf?csf=1&amp;web=1&amp;e=XllMNi" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="c2798426-0aaf-488c-91ed-1743b1574472">✎ Editar</button>
-                <button class="delete" data-id="c2798426-0aaf-488c-91ed-1743b1574472">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>28</td>
-            <td>ATGO Centro SE Sabará 3</td>
-            <td>AVCB</td>
-            <td>25/11/2024</td>
-            <td>25/11/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20Sabar%C3%A1%203%20-%20Mina%20Cuiab%C3%A1%20-%20validade_26_11_2029.pdf?csf=1&amp;web=1&amp;e=sd2jTg" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="5ffb0124-8f45-4e74-bb55-8e01b65d4856">✎ Editar</button>
-                <button class="delete" data-id="5ffb0124-8f45-4e74-bb55-8e01b65d4856">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>29</td>
-            <td>ATGO Leste SE Guilman Amorin</td>
-            <td>AVCB</td>
-            <td>20/01/2025</td>
-            <td>20/01/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Guilman%20Amorin%20-%20validade_21_01_2030.pdf?csf=1&amp;web=1&amp;e=GWmGLl" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="f5a50aeb-db24-46f1-aaba-33eefdcf2727">✎ Editar</button>
-                <button class="delete" data-id="f5a50aeb-db24-46f1-aaba-33eefdcf2727">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>30</td>
-            <td>ATGO Leste SE Mesquita</td>
-            <td>AVCB</td>
-            <td>19/02/2025</td>
-            <td>19/02/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SE%20Mesquita%20-%20validade_20_02_2030.pdf?csf=1&amp;web=1&amp;e=H4fbPN" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="d98808cd-e21a-4c4b-a22f-4926d22d8f13">✎ Editar</button>
-                <button class="delete" data-id="d98808cd-e21a-4c4b-a22f-4926d22d8f13">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>31</td>
-            <td>ATGO Leste Sede Ipatinga</td>
-            <td>AVCB</td>
-            <td>23/02/2025</td>
-            <td>23/02/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Leste%20-%20SEDE%20Ipatinga%20-%20validade_24_02_2030.pdf?csf=1&amp;web=1&amp;e=ZRz0m9" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="86c6d718-7d87-4f10-921f-3d522863241a">✎ Editar</button>
-                <button class="delete" data-id="86c6d718-7d87-4f10-921f-3d522863241a">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>32</td>
-            <td>ATGO Sudeste SE Nova Lima 6</td>
-            <td>AVCB</td>
-            <td>15/05/2025</td>
-            <td>15/05/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Nova%20Lima%206%20-%20validade_16_05_2030.pdf?csf=1&amp;web=1&amp;e=Cm04Qk" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="7891a98b-d2ce-4053-a4f7-ae3eac9a2460">✎ Editar</button>
-                <button class="delete" data-id="7891a98b-d2ce-4053-a4f7-ae3eac9a2460">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>33</td>
-            <td>ATGO Centro SE São Gonçalo do Pará</td>
-            <td>AVCB</td>
-            <td>24/07/2025</td>
-            <td>24/07/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20S%C3%A3o%20Gon%C3%A7alo%20do%20Par%C3%A1%20-%20validade_25_07_2030.pdf?csf=1&amp;web=1&amp;e=d8lKkV" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="7772123b-ea6c-4430-8739-c80743df96ea">✎ Editar</button>
-                <button class="delete" data-id="7772123b-ea6c-4430-8739-c80743df96ea">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>34</td>
-            <td>ATGO Sudeste SE Itajubá 3</td>
-            <td>AVCB</td>
-            <td>25/08/2025</td>
-            <td>25/08/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Itajuba%203%20-%20validade_26_08_2030.pdf?csf=1&amp;web=1&amp;e=ZhgurW" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="3e19f7bd-fbe0-4acb-b875-dde1412753a1">✎ Editar</button>
-                <button class="delete" data-id="3e19f7bd-fbe0-4acb-b875-dde1412753a1">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>35</td>
-            <td>ATGO Norte SE Três Marias</td>
-            <td>AVCB</td>
-            <td>02/02/2026</td>
-            <td>02/02/2031</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Norte%20-%20SE%20Tr%C3%AAs%20Marias%20-%20validade_03_02_2031.pdf?csf=1&amp;web=1&amp;e=rLsuMo" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="f960e260-4886-4f3b-b0a0-b63b4cb1c89c">✎ Editar</button>
-                <button class="delete" data-id="f960e260-4886-4f3b-b0a0-b63b4cb1c89c">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>36</td>
-            <td>ATGO Centro SE Neves 1</td>
-            <td>AVCB</td>
-            <td>09/02/2026</td>
-            <td>09/02/2031</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Centro%20-%20SE%20Neves%201%20-%20validade_10_02_2031.pdf?csf=1&amp;web=1&amp;e=XeCafW" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="77df81f5-1cf6-4505-a4a2-581febfbe5d7">✎ Editar</button>
-                <button class="delete" data-id="77df81f5-1cf6-4505-a4a2-581febfbe5d7">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>37</td>
-            <td>ATGO Sudeste SE Ouro Preto 2</td>
-            <td>AVCB</td>
-            <td>04/12/2025</td>
-            <td>04/12/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20SE%20Ouro%20Preto%202%20-%20validade_05_12_2030.pdf?csf=1&amp;web=1&amp;e=taLfDV" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="bd1217d2-f087-4a4d-9e72-35e5a2a3d8e2">✎ Editar</button>
-                <button class="delete" data-id="bd1217d2-f087-4a4d-9e72-35e5a2a3d8e2">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>38</td>
-            <td>ATGO Sudeste Sede Barbacena</td>
-            <td>AVCB</td>
-            <td>18/02/2026</td>
-            <td>18/02/2031</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Sudeste%20-%20Sede%20Barbacena%20-%20validade_19_02_31.pdf?csf=1&amp;web=1&amp;e=PRpH0O" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="16afb452-558f-49e0-af6c-cd90d9331120">✎ Editar</button>
-                <button class="delete" data-id="16afb452-558f-49e0-af6c-cd90d9331120">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>39</td>
-            <td>ATGO Triângulo SE Bom Despacho 3</td>
-            <td>AVCB</td>
-            <td>25/03/2025</td>
-            <td>25/03/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Tri%C3%A2ngulo%20-%20SE%20Bom%20Despacho%203%20-%20validade_26_03_2030.pdf?csf=1&amp;web=1&amp;e=khA4Vm" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="c2d3c8e8-3286-4f8d-b108-da81337ee16a">✎ Editar</button>
-                <button class="delete" data-id="c2d3c8e8-3286-4f8d-b108-da81337ee16a">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>40</td>
-            <td>ATGO Triângulo SE Emborcação</td>
-            <td>AVCB</td>
-            <td>12/01/2022</td>
-            <td>12/01/2027</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Tri%C3%A2ngulo%20-%20SE%20Emborca%C3%A7%C3%A3o%20-%20validade_%2013_01_2027.pdf?csf=1&amp;web=1&amp;e=A2DebW" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="656da0fe-e554-469a-b5d0-bcac631d59ad">✎ Editar</button>
-                <button class="delete" data-id="656da0fe-e554-469a-b5d0-bcac631d59ad">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>41</td>
-            <td>ATGO Triângulo SE Jaguara 345 kV</td>
-            <td>AVCB</td>
-            <td>28/07/2025</td>
-            <td>28/07/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Tri%C3%A2ngulo%20-%20SE%20Jaguara%20345%20kV%20-%20validade_28_07_2028.pdf?csf=1&amp;web=1&amp;e=pr8nGB" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="4fbf61a6-63c7-43ff-95c6-8c59c47260ae">✎ Editar</button>
-                <button class="delete" data-id="4fbf61a6-63c7-43ff-95c6-8c59c47260ae">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>42</td>
-            <td>ATGO Triângulo SE Jaguara 500 kV</td>
-            <td>AVCB</td>
-            <td>28/07/2025</td>
-            <td>27/07/2028</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Tri%C3%A2ngulo%20-%20SE%20Jaguara%20500%20kV%20-%20validade_28_07_2028.pdf?csf=1&amp;web=1&amp;e=GU9r3g" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="b554d470-987b-4c42-a6c1-28bee1261020">✎ Editar</button>
-                <button class="delete" data-id="b554d470-987b-4c42-a6c1-28bee1261020">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>43</td>
-            <td>ATGO Triângulo SE Nova Ponte</td>
-            <td>AVCB</td>
-            <td>26/10/2025</td>
-            <td>26/10/2030</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Tri%C3%A2ngulo%20-%20SE%20Nova%20Ponte%20-%20validade_27_10_2030.pdf?csf=1&amp;web=1&amp;e=9hMXp0" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="6efe6f8e-5952-4f8e-8fdc-0393a4e5733a">✎ Editar</button>
-                <button class="delete" data-id="6efe6f8e-5952-4f8e-8fdc-0393a4e5733a">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>44</td>
-            <td>ATGO Triângulo SE São Gotardo 2 (PACP 495046)</td>
-            <td>AVCB</td>
-            <td>27/06/2021</td>
-            <td>27/06/2026</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Tri%C3%A2ngulo%20-%20SE%20S%C3%A3o%20Gotardo%202%20-%20validade_28_06_2026.pdf?csf=1&amp;web=1&amp;e=1atxYi" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="637d3183-a1f1-4ec2-b56c-b781bc9f4d0d">✎ Editar</button>
-                <button class="delete" data-id="637d3183-a1f1-4ec2-b56c-b781bc9f4d0d">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>45</td>
-            <td>ATGO Triângulo SE São Simão</td>
-            <td>AVCB</td>
-            <td>22/09/2024</td>
-            <td>22/09/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Tri%C3%A2ngulo%20-%20SE%20S%C3%A3o%20Sim%C3%A3o%20-%20validade_23_09_2029.pdf?csf=1&amp;web=1&amp;e=sppgdE" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="3f566d27-dc70-48d8-bf16-f0b5c37184db">✎ Editar</button>
-                <button class="delete" data-id="3f566d27-dc70-48d8-bf16-f0b5c37184db">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>46</td>
-            <td>ATGO Triângulo SE Volta Grande</td>
-            <td>AVCB</td>
-            <td>05/03/2024</td>
-            <td>20/02/2027</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Triangulo%20-%20SE%20Volta%20Grande%20-%20validade%20%2021_02_2027.pdf?csf=1&amp;web=1&amp;e=Gf9mes" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="cca35f14-a3b4-4401-8676-7aa35c5a9e94">✎ Editar</button>
-                <button class="delete" data-id="cca35f14-a3b4-4401-8676-7aa35c5a9e94">🗑 Excluir</button>
-            </td></tr><tr>
-            <td>47</td>
-            <td>ATGO Triângulo Sede Uberaba</td>
-            <td>AVCB</td>
-            <td>02/04/2024</td>
-            <td>02/04/2029</td>
-            <td><a href="https://cemigbr.sharepoint.com/:b:/r/sites/sistemaintegradodegesto-at/Documentos%20Compartilhados/AVCB%20-%20AUTO%20DE%20VISTORIA%20DO%20CORPO%20DE%20BOMBEIROS/AVCB%20-%20ATGO%20Triangulo%20-%20SEDE%20Uberaba%20-%20Validade_03_04_2029.pdf?csf=1&amp;web=1&amp;e=t3xc6p" target="_blank">Ver</a></td>
-            <td class="actions">
-                <button class="edit" data-id="11558085-d82b-4187-9d8c-1bf0634c08cf">✎ Editar</button>
-                <button class="delete" data-id="11558085-d82b-4187-9d8c-1bf0634c08cf">🗑 Excluir</button>
-            </td></tr></tbody>
+        <tbody></tbody>
     </table>
 
-    <!-- Gráfico semestral -->
-    <h2 style="margin-top:40px;">Previsão de Vencimentos (próximos 5 anos)</h2>
-    <canvas id="semesterChart" height="513" style="display: block; box-sizing: border-box; height: 342.1px; width: 855.3px;" width="1282"></canvas>
+    <div class="last-update" id="lastUpdate"></div>
 
+    <!-- Gráfico -->
+    <h2 style="margin-top:40px;">📊 Previsão de Vencimentos (próximos 5 anos)</h2>
+    <canvas id="semesterChart"></canvas>
 </div>
 
-<!-- Modal de inclusão/edição -->
+<!-- Modal -->
 <div class="modal" id="docModal">
     <div class="modal-content">
         <span class="close" id="closeModal">×</span>
         <h2 id="modalTitle">Novo Documento</h2>
         <form id="docForm">
-            <div class="form-group"><label for="docName">Nome / Identificação *</label>
-                <input type="text" id="docName" required=""></div>
-            <div class="form-group"><label for="docType">Tipo de Documento *</label>
-                <select id="docType" required="">
+            <div class="form-group">
+                <label for="docName">Nome / Identificação *</label>
+                <input type="text" id="docName" required>
+            </div>
+            <div class="form-group">
+                <label for="docType">Tipo de Documento *</label>
+                <select id="docType" required>
                     <option value="">Selecione...</option>
                     <option>AVCB</option>
                     <option>Alvará</option>
@@ -585,90 +146,237 @@
                     <option>LPU de Motocultura</option>
                     <option>Outorga de Poço Artesiano</option>
                     <option>Outros</option>
-                </select></div>
-            <div class="form-group"><label for="docIssue">Data de Emissão *</label>
-                <input type="date" id="docIssue" required=""></div>
-            <div class="form-group"><label for="docExpiry">Data de Validade *</label>
-                <input type="date" id="docExpiry" required=""></div>
-            <div class="form-group"><label for="docLink">Link do Documento *</label>
-                <input type="url" id="docLink" placeholder="https://..." required=""></div>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="docIssue">Data de Emissão *</label>
+                <input type="date" id="docIssue" required>
+            </div>
+            <div class="form-group">
+                <label for="docExpiry">Data de Validade *</label>
+                <input type="date" id="docExpiry" required>
+            </div>
+            <div class="form-group">
+                <label for="docLink">Link do Documento *</label>
+                <input type="url" id="docLink" placeholder="https://..." required>
+            </div>
             <input type="hidden" id="docId">
             <div class="error" id="formError"></div>
-            <button type="submit">Salvar</button>
+            <button type="submit">💾 Salvar</button>
         </form>
     </div>
 </div>
 
 <script>
 /* =========================================================
-   Dados e utilitários
+   GITHUB SYNC ENGINE
    ========================================================= */
-const STORAGE_KEY = "legalDocs";
-const PASSWORD    = "2526000632";
+class GitHubSync {
+    constructor() {
+        this.dataPath = 'data.json';
+        this.sha = null;
+        this.lastSync = null;
+        this.autoRefreshTimer = null;
+    }
 
-let docs = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    get apiUrl() {
+        return `https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/contents/${this.dataPath}`;
+    }
 
-/* ---------- Helpers ---------- */
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(docs)); }
-function daysDiff(a,b){ return Math.floor((b-a)/(1000*60*60*24)); }
-function formatDate(str){ const d = new Date(str); return d.toLocaleDateString('pt-BR'); }
-function getStatus(doc){
+    get headers() {
+        const token = getGitHubToken();
+        return {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        };
+    }
+
+    updateStatus(message, type = 'success') {
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.textContent = `● ${message}`;
+        statusEl.className = 'sync-status ' + type;
+    }
+
+    async fetch() {
+        try {
+            this.updateStatus('Sincronizando...', 'syncing');
+            
+            const response = await fetch(this.apiUrl, { headers: this.headers });
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    // Arquivo não existe, criar um novo
+                    await this.push({ docs: [], lastUpdate: new Date().toISOString(), version: 1 });
+                    return { docs: [], lastUpdate: new Date().toISOString(), version: 1 };
+                }
+                throw new Error(`GitHub API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.sha = data.sha;
+            
+            const content = JSON.parse(atob(data.content));
+            this.lastSync = new Date();
+            this.updateStatus('Sincronizado', 'success');
+            
+            return content;
+        } catch (error) {
+            console.error('Erro ao buscar dados:', error);
+            this.updateStatus('Erro na sincronização', 'error');
+            alert('❌ Erro ao sincronizar com GitHub. Verifique o token e configurações.');
+            return null;
+        }
+    }
+
+    async push(data) {
+        try {
+            this.updateStatus('Salvando...', 'syncing');
+            
+            data.lastUpdate = new Date().toISOString();
+            data.version = (data.version || 0) + 1;
+            
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+            
+            const body = {
+                message: `Atualização automática - ${new Date().toLocaleString('pt-BR')}`,
+                content: content,
+                branch: CONFIG.GITHUB_BRANCH
+            };
+            
+            if (this.sha) {
+                body.sha = this.sha;
+            }
+
+            const response = await fetch(this.apiUrl, {
+                method: 'PUT',
+                headers: this.headers,
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                throw new Error(`GitHub API error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            this.sha = result.content.sha;
+            this.lastSync = new Date();
+            
+            this.updateStatus('Salvo com sucesso', 'success');
+            setTimeout(() => this.updateStatus('Sincronizado', 'success'), 2000);
+            
+            return true;
+        } catch (error) {
+            console.error('Erro ao salvar dados:', error);
+            this.updateStatus('Erro ao salvar', 'error');
+            alert('❌ Erro ao salvar no GitHub. Tente novamente.');
+            return false;
+        }
+    }
+
+    startAutoRefresh() {
+        if (this.autoRefreshTimer) {
+            clearInterval(this.autoRefreshTimer);
+        }
+        
+        this.autoRefreshTimer = setInterval(async () => {
+            const data = await this.fetch();
+            if (data) {
+                docs = data.docs || [];
+                refreshAll();
+            }
+        }, CONFIG.AUTO_REFRESH_INTERVAL * 1000);
+    }
+
+    stopAutoRefresh() {
+        if (this.autoRefreshTimer) {
+            clearInterval(this.autoRefreshTimer);
+            this.autoRefreshTimer = null;
+        }
+    }
+}
+
+const github = new GitHubSync();
+let docs = [];
+
+/* =========================================================
+   UTILITY FUNCTIONS
+   ========================================================= */
+function daysDiff(a, b) { return Math.floor((b - a) / (1000 * 60 * 60 * 24)); }
+
+function formatDate(str) {
+    const d = new Date(str + 'T00:00:00');
+    return d.toLocaleDateString('pt-BR');
+}
+
+function getStatus(doc) {
     const today = new Date();
-    const exp   = new Date(doc.expiry);
-    const diff  = daysDiff(today,exp);
+    const exp = new Date(doc.expiry + 'T00:00:00');
+    const diff = daysDiff(today, exp);
     if (exp < today) return "expired";
-    if (diff <= 90)   return "near";
+    if (diff <= 90) return "near";
     return "valid";
 }
 
-/* =========================================================
-   Dashboard
-   ========================================================= */
-function refreshDashboard(){
-    const today = new Date();
-    const valid   = docs.filter(d=> getStatus(d)==="valid").length;
-    const near    = docs.filter(d=> getStatus(d)==="near").length;
-    const expired = docs.filter(d=> getStatus(d)==="expired").length;
-    document.getElementById('validCount').textContent   = valid;
-    document.getElementById('nearCount').textContent    = near;
-    document.getElementById('expiredCount').textContent = expired;
+function getStatusText(status) {
+    const map = {
+        valid: '✅ Válido',
+        near: '⚠️ Vencendo',
+        expired: '❌ Vencido'
+    };
+    return map[status] || '';
 }
 
 /* =========================================================
-   Tabela + Busca / Filtros
+   DASHBOARD
    ========================================================= */
-function renderTable(){
+function refreshDashboard() {
+    const valid = docs.filter(d => getStatus(d) === "valid").length;
+    const near = docs.filter(d => getStatus(d) === "near").length;
+    const expired = docs.filter(d => getStatus(d) === "expired").length;
+    
+    document.getElementById('validCount').textContent = valid;
+    document.getElementById('nearCount').textContent = near;
+    document.getElementById('expiredCount').textContent = expired;
+    
+    // Atualizar último update
+    if (github.lastSync) {
+        document.getElementById('lastUpdate').textContent = 
+            `Última sincronização: ${github.lastSync.toLocaleString('pt-BR')}`;
+    }
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+function renderTable() {
     const tbody = document.querySelector('#docTable tbody');
     tbody.innerHTML = "";
 
-    // ----> INPUTS DE FILTRO
-    const txtSearch   = document.getElementById('globalSearch').value.trim().toLowerCase();
-    const typeFilter  = document.getElementById('filterType').value;
-    const statusFilter= document.getElementById('filterStatus').value;
+    const txtSearch = document.getElementById('globalSearch').value.trim().toLowerCase();
+    const typeFilter = document.getElementById('filterType').value;
+    const statusFilter = document.getElementById('filterStatus').value;
 
-    const filtered = docs.filter(doc=>{
-        // --- filtro de texto livre
+    const filtered = docs.filter(doc => {
         const searchable = `${doc.name} ${doc.type} ${formatDate(doc.issue)} ${formatDate(doc.expiry)} ${doc.link}`.toLowerCase();
-        if(txtSearch && !searchable.includes(txtSearch)) return false;
-
-        // --- filtro por tipo
-        if(typeFilter && doc.type !== typeFilter) return false;
-
-        // --- filtro por situação (status)
-        if(statusFilter && getStatus(doc) !== statusFilter) return false;
-
+        if (txtSearch && !searchable.includes(txtSearch)) return false;
+        if (typeFilter && doc.type !== typeFilter) return false;
+        if (statusFilter && getStatus(doc) !== statusFilter) return false;
         return true;
     });
 
-    filtered.forEach((doc, idx)=>{
+    filtered.forEach((doc, idx) => {
+        const status = getStatus(doc);
         const tr = document.createElement('tr');
+        tr.className = `row-${status}`;
         tr.innerHTML = `
-            <td>${idx+1}</td>
+            <td>${idx + 1}</td>
             <td>${doc.name}</td>
             <td>${doc.type}</td>
             <td>${formatDate(doc.issue)}</td>
             <td>${formatDate(doc.expiry)}</td>
-            <td><a href="${doc.link}" target="_blank">Ver</a></td>
+            <td>${getStatusText(status)}</td>
+            <td><a href="${doc.link}" target="_blank">🔗 Ver</a></td>
             <td class="actions">
                 <button class="edit" data-id="${doc.id}">✎ Editar</button>
                 <button class="delete" data-id="${doc.id}">🗑 Excluir</button>
@@ -678,145 +386,229 @@ function renderTable(){
 }
 
 /* =========================================================
-   Gráfico semestral (próximos 5 anos)
+   CHART
    ========================================================= */
 let semesterChart = null;
-function buildChart(){
-    const now   = new Date();
-    const labels= [];
-    const data  = new Array(10).fill(0); // 5 anos = 10 semestres
+function buildChart() {
+    const now = new Date();
+    const labels = [];
+    const data = new Array(10).fill(0);
 
-    for(let i=0;i<10;i++){
+    for (let i = 0; i < 10; i++) {
         const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        start.setMonth(start.getMonth() + i*6);
-        const month = start.getMonth()+1;
-        const year  = start.getFullYear();
-        labels.push(`S${i+1} (${month}/${year})`);
+        start.setMonth(start.getMonth() + i * 6);
+        const month = start.getMonth() + 1;
+        const year = start.getFullYear();
+        labels.push(`S${i + 1} (${month}/${year})`);
     }
 
-    docs.forEach(d=>{
-        const exp = new Date(d.expiry);
-        if(exp < now) return;
-        const diffMonths = (exp.getFullYear()-now.getFullYear())*12 + (exp.getMonth()-now.getMonth());
-        const idx = Math.floor(diffMonths/6);
-        if(idx>=0 && idx<10) data[idx] += 1;
+    docs.forEach(d => {
+        const exp = new Date(d.expiry + 'T00:00:00');
+        if (exp < now) return;
+        const diffMonths = (exp.getFullYear() - now.getFullYear()) * 12 + (exp.getMonth() - now.getMonth());
+        const idx = Math.floor(diffMonths / 6);
+        if (idx >= 0 && idx < 10) data[idx] += 1;
     });
 
     const ctx = document.getElementById('semesterChart').getContext('2d');
-    if(semesterChart) semesterChart.destroy();
-    semesterChart = new Chart(ctx,{
-        type:'bar',
-        data:{labels, datasets:[{
-            label:'Documentos que vencem',
-            data,
-            backgroundColor:'#0066cc',
-            borderColor:'#004999',
-            borderWidth:1
-        }]},
-        options:{responsive:true, scales:{y:{beginAtZero:true,precision:0}}}
+    if (semesterChart) semesterChart.destroy();
+    semesterChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Documentos que vencem',
+                data,
+                backgroundColor: '#0066cc',
+                borderColor: '#004999',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
     });
 }
 
 /* =========================================================
-   Modal (Inserir / Editar)
+   MODAL
    ========================================================= */
 const modal = document.getElementById('docModal');
-const form  = document.getElementById('docForm');
+const form = document.getElementById('docForm');
 const modalTitle = document.getElementById('modalTitle');
-const errorDiv   = document.getElementById('formError');
+const errorDiv = document.getElementById('formError');
 
-function openModal(editDoc=null){
+function openModal(editDoc = null) {
     errorDiv.textContent = "";
-    if(editDoc){
+    if (editDoc) {
         modalTitle.textContent = "Editar Documento";
-        document.getElementById('docId').value   = editDoc.id;
+        document.getElementById('docId').value = editDoc.id;
         document.getElementById('docName').value = editDoc.name;
         document.getElementById('docType').value = editDoc.type;
-        document.getElementById('docIssue').value= editDoc.issue;
-        document.getElementById('docExpiry').value= editDoc.expiry;
+        document.getElementById('docIssue').value = editDoc.issue;
+        document.getElementById('docExpiry').value = editDoc.expiry;
         document.getElementById('docLink').value = editDoc.link;
-    }else{
+    } else {
         modalTitle.textContent = "Novo Documento";
         form.reset();
         document.getElementById('docId').value = "";
     }
     modal.style.display = "flex";
 }
-function closeModal(){ modal.style.display = "none"; }
+
+function closeModal() { modal.style.display = "none"; }
+
 document.getElementById('closeModal').onclick = closeModal;
-window.onclick = e=>{ if(e.target===modal) closeModal(); };
+window.onclick = e => { if (e.target === modal) closeModal(); };
 
-document.getElementById('btnAdd').addEventListener('click',()=>{
-    const pwd = prompt("Informe a senha para inclusão:");
-    if(pwd===PASSWORD) openModal();
-    else alert("Senha incorreta. Operação não permitida.");
-});
-
-form.addEventListener('submit',e=>{
+/* =========================================================
+   FORM SUBMIT
+   ========================================================= */
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const id    = document.getElementById('docId').value;
-    const name  = document.getElementById('docName').value.trim();
-    const type  = document.getElementById('docType').value;
+    
+    const id = document.getElementById('docId').value;
+    const name = document.getElementById('docName').value.trim();
+    const type = document.getElementById('docType').value;
     const issue = document.getElementById('docIssue').value;
-    const expiry= document.getElementById('docExpiry').value;
-    const link  = document.getElementById('docLink').value.trim();
+    const expiry = document.getElementById('docExpiry').value;
+    const link = document.getElementById('docLink').value.trim();
 
-    if(new Date(expiry) < new Date(issue)){
+    if (new Date(expiry) < new Date(issue)) {
         errorDiv.textContent = "A data de validade não pode ser anterior à data de emissão.";
         return;
     }
 
-    if(id){
-        const idx = docs.findIndex(d=>d.id===id);
-        if(idx!==-1) docs[idx] = {id, name, type, issue, expiry, link};
-    }else{
-        docs.push({id:crypto.randomUUID(), name, type, issue, expiry, link});
+    if (id) {
+        const idx = docs.findIndex(d => d.id === id);
+        if (idx !== -1) docs[idx] = { id, name, type, issue, expiry, link };
+    } else {
+        docs.push({ id: crypto.randomUUID(), name, type, issue, expiry, link });
     }
-    saveData();
-    closeModal();
-    refreshAll();
+
+    const saved = await github.push({ docs });
+    if (saved) {
+        closeModal();
+        refreshAll();
+    }
 });
 
-/* ---------------------------------------------------------
-   Ações da tabela (editar / excluir)
-   --------------------------------------------------------- */
-document.querySelector('#docTable tbody').addEventListener('click',e=>{
+/* =========================================================
+   BUTTON EVENTS
+   ========================================================= */
+document.getElementById('btnAdd').addEventListener('click', () => {
+    const pwd = prompt("🔒 Informe a senha para inclusão:");
+    if (pwd === CONFIG.EDIT_PASSWORD) openModal();
+    else alert("❌ Senha incorreta.");
+});
+
+document.getElementById('btnSync').addEventListener('click', async () => {
+    const data = await github.fetch();
+    if (data) {
+        docs = data.docs || [];
+        refreshAll();
+        alert('✅ Dados sincronizados com sucesso!');
+    }
+});
+
+document.getElementById('btnExport').addEventListener('click', () => {
+    const csv = [
+        ['#', 'Nome', 'Tipo', 'Emissão', 'Validade', 'Status', 'Link'],
+        ...docs.map((d, i) => [
+            i + 1, d.name, d.type,
+            formatDate(d.issue), formatDate(d.expiry),
+            getStatusText(getStatus(d)), d.link
+        ])
+    ];
+
+    const csvContent = '\ufeff' + csv.map(row => row.join(';')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `requisitos_legais_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+});
+
+document.getElementById('btnConfig').addEventListener('click', () => {
+    sessionStorage.removeItem('github_token');
+    alert('🔑 Token removido. Será solicitado na próxima sincronização.');
+});
+
+/* =========================================================
+   TABLE ACTIONS
+   ========================================================= */
+document.querySelector('#docTable tbody').addEventListener('click', async (e) => {
     const btn = e.target.closest('button');
-    if(!btn) return;
+    if (!btn) return;
+    
     const id = btn.dataset.id;
-    if(btn.classList.contains('edit')){
-        const pwd = prompt("Informe a senha para edição:");
-        if(pwd!==PASSWORD){ alert("Senha incorreta."); return; }
-        const doc = docs.find(d=>d.id===id);
+    
+    if (btn.classList.contains('edit')) {
+        const pwd = prompt("🔒 Informe a senha para edição:");
+        if (pwd !== CONFIG.EDIT_PASSWORD) {
+            alert("❌ Senha incorreta.");
+            return;
+        }
+        const doc = docs.find(d => d.id === id);
         openModal(doc);
     }
-    if(btn.classList.contains('delete')){
-        const pwd = prompt("Informe a senha para exclusão:");
-        if(pwd!==PASSWORD){ alert("Senha incorreta."); return; }
-        if(confirm("Deseja realmente excluir este documento?")){
-            docs = docs.filter(d=>d.id!==id);
-            saveData();
-            refreshAll();
+    
+    if (btn.classList.contains('delete')) {
+        const pwd = prompt("🔒 Informe a senha para exclusão:");
+        if (pwd !== CONFIG.EDIT_PASSWORD) {
+            alert("❌ Senha incorreta.");
+            return;
+        }
+        if (confirm("⚠️ Deseja realmente excluir este documento?")) {
+            docs = docs.filter(d => d.id !== id);
+            const saved = await github.push({ docs });
+            if (saved) refreshAll();
         }
     }
 });
 
-/* ---------------------------------------------------------
-   Eventos de pesquisa e filtros
-   --------------------------------------------------------- */
-document.getElementById('globalSearch').addEventListener('input',refreshAll);
-document.getElementById('filterType').addEventListener('change',refreshAll);
-document.getElementById('filterStatus').addEventListener('change',refreshAll);
+/* =========================================================
+   FILTERS
+   ========================================================= */
+document.getElementById('globalSearch').addEventListener('input', renderTable);
+document.getElementById('filterType').addEventListener('change', renderTable);
+document.getElementById('filterStatus').addEventListener('change', renderTable);
 
 /* =========================================================
-   Atualização geral
+   INIT
    ========================================================= */
-function refreshAll(){
+function refreshAll() {
     renderTable();
     refreshDashboard();
     buildChart();
 }
-refreshAll();   // carregamento inicial
-</script>
 
-</body></html>
+async function init() {
+    const data = await github.fetch();
+    if (data) {
+        docs = data.docs || [];
+        refreshAll();
+        github.startAutoRefresh();
+        
+        // Notificar vencimentos
+        const expiringSoon = docs.filter(d => ['near', 'expired'].includes(getStatus(d)));
+        if (expiringSoon.length > 0) {
+            setTimeout(() => {
+                alert(`⚠️ ATENÇÃO: ${expiringSoon.length} documento(s) vencendo ou vencido(s)!`);
+            }, 1000);
+        }
+    }
+}
+
+// Limpar timer ao sair
+window.addEventListener('beforeunload', () => {
+    github.stopAutoRefresh();
+});
+
+init();
+</script>
+</body>
+</html>
